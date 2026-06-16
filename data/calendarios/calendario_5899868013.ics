@@ -1,48 +1,96 @@
-BEGIN:VCALENDAR
-VERSION:2.0
-PRODID:-//Asistente Academico//Calendario de tareas//ES
-CALSCALE:GREGORIAN
-METHOD:PUBLISH
-X-WR-CALNAME:Asistente Academico
-X-WR-CALDESC:Tareas programadas del bot academico
-BEGIN:VEVENT
-UID:asistente-academico-5899868013-6@local
-DTSTAMP:20260609T013018Z
-DTSTART;VALUE=DATE:20260608
-DTEND;VALUE=DATE:20260609
-SUMMARY:Estudiar para sustentacion
-DESCRIPTION:Materia: Programacion Avanzada\nPrioridad: Alta\nEstado: Pendiente\nRecordatorio: cada 2 horas
-CATEGORIES:Programacion Avanzada
-STATUS:CONFIRMED
-END:VEVENT
-BEGIN:VEVENT
-UID:asistente-academico-5899868013-3@local
-DTSTAMP:20260609T013018Z
-DTSTART;VALUE=DATE:20260608
-DTEND;VALUE=DATE:20260609
-SUMMARY:[Completada] Estidiar
-DESCRIPTION:Materia: programacion avanzada\nPrioridad: Alta\nEstado: Completada\nRecordatorio: diario
-CATEGORIES:programacion avanzada
-STATUS:CONFIRMED
-END:VEVENT
-BEGIN:VEVENT
-UID:asistente-academico-5899868013-1@local
-DTSTAMP:20260609T013018Z
-DTSTART;VALUE=DATE:20260608
-DTEND;VALUE=DATE:20260609
-SUMMARY:1. Agregar tarea
-DESCRIPTION:Materia: General\nPrioridad: Media\nEstado: Pendiente\nRecordatorio: diario
-CATEGORIES:General
-STATUS:CONFIRMED
-END:VEVENT
-BEGIN:VEVENT
-UID:asistente-academico-5899868013-9@local
-DTSTAMP:20260609T013018Z
-DTSTART;VALUE=DATE:20260616
-DTEND;VALUE=DATE:20260617
-SUMMARY:Entregar el proyecto
-DESCRIPTION:Materia: programacion avanzada\nPrioridad: Alta\nEstado: Pendiente\nRecordatorio: cada 3 horas
-CATEGORIES:programacion avanzada
-STATUS:CONFIRMED
-END:VEVENT
-END:VCALENDAR
+BEGIN:VCALENDAR
+
+VERSION:2.0
+
+PRODID:-//Asistente Academico//Calendario de tareas//ES
+
+CALSCALE:GREGORIAN
+
+METHOD:PUBLISH
+
+X-WR-CALNAME:Asistente Academico
+
+X-WR-CALDESC:Tareas programadas del bot academico
+
+BEGIN:VEVENT
+
+UID:asistente-academico-5899868013-6@local
+
+DTSTAMP:20260609T013018Z
+
+DTSTART;VALUE=DATE:20260608
+
+DTEND;VALUE=DATE:20260609
+
+SUMMARY:Estudiar para sustentacion
+
+DESCRIPTION:Materia: Programacion Avanzada\nPrioridad: Alta\nEstado: Pendiente\nRecordatorio: cada 2 horas
+
+CATEGORIES:Programacion Avanzada
+
+STATUS:CONFIRMED
+
+END:VEVENT
+
+BEGIN:VEVENT
+
+UID:asistente-academico-5899868013-3@local
+
+DTSTAMP:20260609T013018Z
+
+DTSTART;VALUE=DATE:20260608
+
+DTEND;VALUE=DATE:20260609
+
+SUMMARY:[Completada] Estidiar
+
+DESCRIPTION:Materia: programacion avanzada\nPrioridad: Alta\nEstado: Completada\nRecordatorio: diario
+
+CATEGORIES:programacion avanzada
+
+STATUS:CONFIRMED
+
+END:VEVENT
+
+BEGIN:VEVENT
+
+UID:asistente-academico-5899868013-1@local
+
+DTSTAMP:20260609T013018Z
+
+DTSTART;VALUE=DATE:20260608
+
+DTEND;VALUE=DATE:20260609
+
+SUMMARY:1. Agregar tarea
+
+DESCRIPTION:Materia: General\nPrioridad: Media\nEstado: Pendiente\nRecordatorio: diario
+
+CATEGORIES:General
+
+STATUS:CONFIRMED
+
+END:VEVENT
+
+BEGIN:VEVENT
+
+UID:asistente-academico-5899868013-9@local
+
+DTSTAMP:20260609T013018Z
+
+DTSTART;VALUE=DATE:20260616
+
+DTEND;VALUE=DATE:20260617
+
+SUMMARY:Entregar el proyecto
+
+DESCRIPTION:Materia: programacion avanzada\nPrioridad: Alta\nEstado: Pendiente\nRecordatorio: cada 3 horas
+
+CATEGORIES:programacion avanzada
+
+STATUS:CONFIRMED
+
+END:VEVENT
+
+END:VCALENDAR
+
