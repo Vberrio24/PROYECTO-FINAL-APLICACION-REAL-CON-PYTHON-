@@ -1,0 +1,962 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Calendario Academico</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f8fafc;
+      --panel: #ffffff;
+      --text: #0f172a;
+      --muted: #64748b;
+      --line: #e2e8f0;
+      --header: #1e293b;
+      --soft: #f1f5f9;
+      --today: #3b82f6;
+      --high: #ef4444;
+      --medium: #f59e0b;
+      --low: #10b981;
+      --completed: #10b981;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', Arial, Helvetica, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+    main {
+      width: min(1280px, calc(100% - 24px));
+      margin: 24px auto;
+    }
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 2px solid var(--line);
+    }
+    h1 {
+      margin: 0 0 6px;
+      font-size: 28px;
+      color: var(--header);
+      font-weight: 700;
+    }
+    .subtitle {
+      margin: 0;
+      color: var(--muted);
+      font-size: 14px;
+    }
+    .legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      font-size: 12px;
+      color: var(--muted);
+    }
+    .legend span {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 12px;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      font-weight: 500;
+    }
+    .dot {
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      display: inline-block;
+    }
+    .dot.high { background: var(--high); }
+    .dot.medium { background: var(--medium); }
+    .dot.low { background: var(--low); }
+    
+    /* Estilos del Dashboard */
+    .dashboard-container {
+      display: grid;
+      grid-template-columns: 280px 1fr;
+      gap: 24px;
+    }
+    .sidebar {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .kpi-card {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 16px;
+      box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+    }
+    .kpi-card h3 {
+      margin: 0 0 12px 0;
+      font-size: 14px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      font-weight: 600;
+    }
+    .progress-bar-container {
+      background: var(--soft);
+      border-radius: 999px;
+      height: 12px;
+      width: 100%;
+      overflow: hidden;
+      margin-bottom: 8px;
+    }
+    .progress-bar {
+      background: var(--today);
+      height: 100%;
+      border-radius: 999px;
+      transition: width 0.4s ease;
+    }
+    .progress-pct-text {
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--header);
+      margin: 0;
+    }
+    .progress-desc {
+      margin: 4px 0 0 0;
+      font-size: 12px;
+      color: var(--muted);
+    }
+    .kpi-stats {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+    }
+    .stat-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 13px;
+    }
+    .stat-label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--muted);
+    }
+    .stat-value {
+      font-weight: 600;
+      color: var(--header);
+    }
+    .bullet {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+    }
+    .bullet.pending { background: var(--high); }
+    .bullet.in-progress { background: var(--medium); }
+    .bullet.completed { background: var(--low); }
+    .bullet.overdue { background: #475569; }
+    
+    .stat-large {
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--low);
+      margin: 0;
+    }
+    
+    .highlight-card {
+      border-left: 4px solid var(--today);
+    }
+    .highlight-card.urgent {
+      border-left-color: var(--high);
+    }
+    .highlight-card p {
+      margin: 0;
+      font-size: 13px;
+      line-height: 1.5;
+    }
+    .badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 600;
+      margin-top: 6px;
+    }
+    .badge.subject {
+      background: var(--soft);
+      color: var(--muted);
+    }
+    .badge.priority-critica {
+      background: #fef2f2;
+      color: #dc2626;
+      border: 1px solid #fee2e2;
+    }
+    .badge.priority-alta {
+      background: #fee2e2;
+      color: #ef4444;
+    }
+    .badge.priority-media {
+      background: #fef3c7;
+      color: #d97706;
+    }
+    .badge.priority-baja {
+      background: #d1fae5;
+      color: #059669;
+    }
+    
+    /* Estilos del Calendario */
+    .calendar-content {
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+    .month {
+      border: 1px solid var(--line);
+      background: var(--panel);
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 10px 15px -3px rgba(0,0,0,0.05);
+    }
+    .month-title {
+      margin: 0;
+      padding: 16px;
+      color: #ffffff;
+      background: var(--header);
+      font-size: 18px;
+      font-weight: 600;
+    }
+    .weekdays,
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 1px;
+      background: var(--line);
+    }
+    .weekdays div {
+      background: var(--soft);
+      padding: 10px;
+      font-size: 13px;
+      font-weight: 600;
+      text-align: center;
+      color: var(--muted);
+    }
+    .day {
+      min-height: 120px;
+      background: var(--panel);
+      padding: 8px;
+    }
+    .day header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 13px;
+      font-weight: 700;
+      margin-bottom: 6px;
+      color: var(--text);
+    }
+    .weekday-mobile { display: none; }
+    .task-count {
+      font-size: 10px;
+      color: var(--muted);
+      font-weight: 600;
+      background: var(--soft);
+      padding: 2px 6px;
+      border-radius: 999px;
+    }
+    .muted {
+      background: #fafafa;
+      color: #cbd5e1;
+    }
+    .today {
+      background: #eff6ff;
+      outline: 2px solid var(--today);
+      outline-offset: -2px;
+    }
+    
+    /* Estilos de Tareas */
+    .task {
+      border-left: 4px solid var(--medium);
+      background: #fffdf5;
+      padding: 6px 8px;
+      margin: 4px 0;
+      border-radius: 4px;
+      font-size: 11px;
+      color: var(--text);
+      box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+      transition: transform 0.1s ease;
+    }
+    .task:hover {
+      transform: translateX(2px);
+    }
+    .task strong {
+      display: block;
+      line-height: 1.2;
+      font-weight: 600;
+    }
+    .task span {
+      display: block;
+      color: var(--muted);
+      margin-top: 2px;
+      font-size: 10px;
+    }
+    
+    .priority-critica { border-left-color: #dc2626; }
+    .priority-alta { border-left-color: var(--high); }
+    .priority-media { border-left-color: var(--medium); }
+    .priority-baja { border-left-color: var(--low); }
+    
+    .status-completada {
+      background: #f0fdf4;
+      border-left-color: var(--low);
+      text-decoration: line-through;
+      opacity: 0.6;
+    }
+    .status-en-progreso {
+      background: #eff6ff;
+      border-left-style: dashed;
+      border-left-color: var(--today);
+    }
+    .status-vencida {
+      background: #fef2f2;
+      border-left-color: var(--high);
+      border-left-width: 6px;
+    }
+    
+    @media (max-width: 820px) {
+      .dashboard-container {
+        grid-template-columns: 1fr;
+      }
+      .topbar { display: block; }
+      .legend { justify-content: flex-start; margin-top: 10px; }
+      .weekdays { display: none; }
+      .grid { display: block; border: 0; background: transparent; }
+      .day { min-height: auto; margin-bottom: 8px; border: 1px solid var(--line); border-radius: 6px; }
+      .muted { display: none; }
+      .weekday-mobile { display: inline; color: var(--muted); font-weight: 500; }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <div class="topbar">
+      <div>
+        <h1>Calendario Academico Premium</h1>
+        <p class="subtitle">8 tareas programadas</p>
+      </div>
+      <div class="legend">
+        <span><i class="dot high"></i>Alta prioridad</span>
+        <span><i class="dot medium"></i>Media prioridad</span>
+        <span><i class="dot low"></i>Baja prioridad</span>
+      </div>
+    </div>
+    
+    <div class="dashboard-container">
+      <aside class="sidebar">
+        <!-- KPI Progreso -->
+        <div class="kpi-card">
+          <h3>Progreso General</h3>
+          <p class="progress-pct-text">12.5%</p>
+          <div class="progress-bar-container">
+            <div class="progress-bar" style="width: 12.5%"></div>
+          </div>
+          <p class="progress-desc">1 de 8 completadas</p>
+        </div>
+        
+        <!-- KPI Cantidad por Estado -->
+        <div class="kpi-stats">
+          <div class="stat-item">
+            <span class="stat-label"><span class="bullet completed"></span> Completadas</span>
+            <span class="stat-value">1</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label"><span class="bullet in-progress"></span> En Progreso</span>
+            <span class="stat-value">3</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label"><span class="bullet pending"></span> Pendientes</span>
+            <span class="stat-value">5</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label"><span class="bullet overdue"></span> Vencidas</span>
+            <span class="stat-value">0</span>
+          </div>
+        </div>
+
+        <!-- KPI Productividad -->
+        <div class="kpi-card">
+          <h3>Indice de Productividad</h3>
+          <p class="stat-large">100.0%</p>
+          <p class="progress-desc">Entregadas a tiempo</p>
+        </div>
+
+        <!-- KPI Proxima Entrega -->
+        <div class="kpi-card highlight-card">
+          <h3>Proxima Entrega</h3>
+          <p><strong>Estidiar</strong><br>📅 2026-06-08 (🕒 11:59 PM)<br><span class='badge subject'>programacion avanzada</span></p>
+        </div>
+
+        <!-- KPI Mas Urgente -->
+        <div class="kpi-card highlight-card urgent">
+          <h3>Tarea mas Urgente</h3>
+          <p><strong>Estudiar para sustentacion</strong><br>Prioridad: <span class='badge priority-crítica'>Crítica</span><br><span class='badge subject'>Programacion Avanzada</span></p>
+        </div>
+      </aside>
+      
+      <section class="calendar-content">
+        <section class="month">
+      <h2 class="month-title">Junio 2026</h2>
+      <div class="weekdays"><div>Lunes</div><div>Martes</div><div>Miercoles</div><div>Jueves</div><div>Viernes</div><div>Sabado</div><div>Domingo</div></div>
+      <div class="grid"><section class="day">
+                    <header>
+                      <span>1 <small class="weekday-mobile">Lun</small></span>
+                      
+                    </header>
+                    
+                </section><section class="day">
+                    <header>
+                      <span>2 <small class="weekday-mobile">Mar</small></span>
+                      
+                    </header>
+                    
+                </section><section class="day">
+                    <header>
+                      <span>3 <small class="weekday-mobile">Mie</small></span>
+                      
+                    </header>
+                    
+                </section><section class="day">
+                    <header>
+                      <span>4 <small class="weekday-mobile">Jue</small></span>
+                      
+                    </header>
+                    
+                </section><section class="day">
+                    <header>
+                      <span>5 <small class="weekday-mobile">Vie</small></span>
+                      
+                    </header>
+                    
+                </section><section class="day">
+                    <header>
+                      <span>6 <small class="weekday-mobile">Sab</small></span>
+                      
+                    </header>
+                    
+                </section><section class="day">
+                    <header>
+                      <span>7 <small class="weekday-mobile">Dom</small></span>
+                      
+                    </header>
+                    
+                </section><section class="day">
+                    <header>
+                      <span>8 <small class="weekday-mobile">Lun</small></span>
+                      <span class="task-count">1</span>
+                    </header>
+                    <div class="task priority-alta status-completada">
+        <strong>🟢 Estidiar</strong>
+        <span>programacion avanzada - Alta | 🕒 11:59 PM</span>
+    </div>
+                </section><section class="day">
+                    <header>
+                      <span>9 <small class="weekday-mobile">Mar</small></span>
+                      
+                    </header>
+                    
+                </section><section class="day">
+                    <header>
+                      <span>10 <small class="weekday-mobile">Mie</small></span>
+                      
+                    </header>
+                    
+                </section><section class="day">
+                    <header>
+                      <span>11 <small class="weekday-mobile">Jue</small></span>
+                      
+                    </header>
+                    
+                </section><section class="day">
+                    <header>
+                      <span>12 <small class="weekday-mobile">Vie</small></span>
+                      
+                    </header>
+                    
+                </section><section class="day">
+                    <header>
+                      <span>13 <small class="weekday-mobile">Sab</small></span>
+                      
+                    </header>
+                    
+                </section><section class="day">
+                    <header>
+                      <span>14 <small class="weekday-mobile">Dom</small></span>
+                      
+                    </header>
+                    
+                </section><section class="day">
+                    <header>
+                      <span>15 <small class="weekday-mobile">Lun</small></span>
+                      
+                    </header>
+                    
+                </section><section class="day today">
+                    <header>
+                      <span>16 <small class="weekday-mobile">Mar</small></span>
+                      <span class="task-count">3</span>
+                    </header>
+                    <div class="task priority-critica status-en-progreso">
+        <strong>🟡 Estudiar para sustentacion</strong>
+        <span>Programacion Avanzada - Crítica | 🕒 11:59 PM</span>
+    </div>
+<div class="task priority-critica status-pendiente">
+        <strong>🔴 Entregar proyecto PA.</strong>
+        <span>Programacion Avanzada - Crítica | 🕒 11:59 PM</span>
+    </div>
+<div class="task priority-critica status-pendiente">
+        <strong>🔴 Parcial Sistemas Operativos</strong>
+        <span>Sistemas Operativos - Crítica | 🕒 11:59 PM</span>
+    </div>
+                </section><section class="day">
+                    <header>
+                      <span>17 <small class="weekday-mobile">Mie</small></span>
+                      
+                    </header>
+                    
+                </section><section class="day">
+                    <header>
+                      <span>18 <small class="weekday-mobile">Jue</small></span>
+                      <span class="task-count">1</span>
+                    </header>
+                    <div class="task priority-alta status-en-progreso">
+        <strong>🟡 Exposición</strong>
+        <span>Análisis y diseño de sistemas - Alta | 🕒 11:59 PM</span>
+    </div>
+                </section><section class="day">
+                    <header>
+                      <span>19 <small class="weekday-mobile">Vie</small></span>
+                      <span class="task-count">1</span>
+                    </header>
+                    <div class="task priority-media status-en-progreso">
+        <strong>🟡 Entregar informe</strong>
+        <span>Redes - Media | 🕒 4:00 PM</span>
+    </div>
+                </section><section class="day">
+                    <header>
+                      <span>20 <small class="weekday-mobile">Sab</small></span>
+                      
+                    </header>
+                    
+                </section><section class="day">
+                    <header>
+                      <span>21 <small class="weekday-mobile">Dom</small></span>
+                      
+                    </header>
+                    
+                </section><section class="day">
+                    <header>
+                      <span>22 <small class="weekday-mobile">Lun</small></span>
+                      <span class="task-count">1</span>
+                    </header>
+                    <div class="task priority-media status-pendiente">
+        <strong>🔴 Entregar proyecto</strong>
+        <span>Metodología de la investigación. - Media | 🕒 11:59 PM</span>
+    </div>
+                </section><section class="day">
+                    <header>
+                      <span>23 <small class="weekday-mobile">Mar</small></span>
+                      
+                    </header>
+                    
+                </section><section class="day">
+                    <header>
+                      <span>24 <small class="weekday-mobile">Mie</small></span>
+                      
+                    </header>
+                    
+                </section><section class="day">
+                    <header>
+                      <span>25 <small class="weekday-mobile">Jue</small></span>
+                      
+                    </header>
+                    
+                </section><section class="day">
+                    <header>
+                      <span>26 <small class="weekday-mobile">Vie</small></span>
+                      
+                    </header>
+                    
+                </section><section class="day">
+                    <header>
+                      <span>27 <small class="weekday-mobile">Sab</small></span>
+                      
+                    </header>
+                    
+                </section><section class="day">
+                    <header>
+                      <span>28 <small class="weekday-mobile">Dom</small></span>
+                      
+                    </header>
+                    
+                </section><section class="day">
+                    <header>
+                      <span>29 <small class="weekday-mobile">Lun</small></span>
+                      
+                    </header>
+                    
+                </section><section class="day">
+                    <header>
+                      <span>30 <small class="weekday-mobile">Mar</small></span>
+                      
+                    </header>
+                    
+                </section><section class="day muted">
+                    <header>
+                      <span>1 <small class="weekday-mobile">Mie</small></span>
+                      <span class="task-count">1</span>
+                    </header>
+                    <div class="task priority-baja status-pendiente">
+        <strong>🔴 No saber mas nada de la U.</strong>
+        <span>A mí - Baja | 🕒 11:59 PM</span>
+    </div>
+                </section><section class="day muted">
+                    <header>
+                      <span>2 <small class="weekday-mobile">Jue</small></span>
+                      
+                    </header>
+                    
+                </section><section class="day muted">
+                    <header>
+                      <span>3 <small class="weekday-mobile">Vie</small></span>
+                      
+                    </header>
+                    
+                </section><section class="day muted">
+                    <header>
+                      <span>4 <small class="weekday-mobile">Sab</small></span>
+                      
+                    </header>
+                    
+                </section><section class="day muted">
+                    <header>
+                      <span>5 <small class="weekday-mobile">Dom</small></span>
+                      
+                    </header>
+                    
+                </section><section class="day muted">
+                    <header>
+                      <span>6 <small class="weekday-mobile">Lun</small></span>
+                      
+                    </header>
+                    
+                </section><section class="day muted">
+                    <header>
+                      <span>7 <small class="weekday-mobile">Mar</small></span>
+                      
+                    </header>
+                    
+                </section><section class="day muted">
+                    <header>
+                      <span>8 <small class="weekday-mobile">Mie</small></span>
+                      
+                    </header>
+                    
+                </section><section class="day muted">
+                    <header>
+                      <span>9 <small class="weekday-mobile">Jue</small></span>
+                      
+                    </header>
+                    
+                </section><section class="day muted">
+                    <header>
+                      <span>10 <small class="weekday-mobile">Vie</small></span>
+                      
+                    </header>
+                    
+                </section><section class="day muted">
+                    <header>
+                      <span>11 <small class="weekday-mobile">Sab</small></span>
+                      
+                    </header>
+                    
+                </section><section class="day muted">
+                    <header>
+                      <span>12 <small class="weekday-mobile">Dom</small></span>
+                      
+                    </header>
+                    
+                </section></div>
+    </section>
+<section class="month">
+      <h2 class="month-title">Julio 2026</h2>
+      <div class="weekdays"><div>Lunes</div><div>Martes</div><div>Miercoles</div><div>Jueves</div><div>Viernes</div><div>Sabado</div><div>Domingo</div></div>
+      <div class="grid"><section class="day muted">
+                    <header>
+                      <span>29 <small class="weekday-mobile">Lun</small></span>
+                      
+                    </header>
+                    
+                </section><section class="day muted">
+                    <header>
+                      <span>30 <small class="weekday-mobile">Mar</small></span>
+                      
+                    </header>
+                    
+                </section><section class="day">
+                    <header>
+                      <span>1 <small class="weekday-mobile">Mie</small></span>
+                      <span class="task-count">1</span>
+                    </header>
+                    <div class="task priority-baja status-pendiente">
+        <strong>🔴 No saber mas nada de la U.</strong>
+        <span>A mí - Baja | 🕒 11:59 PM</span>
+    </div>
+                </section><section class="day">
+                    <header>
+                      <span>2 <small class="weekday-mobile">Jue</small></span>
+                      
+                    </header>
+                    
+                </section><section class="day">
+                    <header>
+                      <span>3 <small class="weekday-mobile">Vie</small></span>
+                      
+                    </header>
+                    
+                </section><section class="day">
+                    <header>
+                      <span>4 <small class="weekday-mobile">Sab</small></span>
+                      
+                    </header>
+                    
+                </section><section class="day">
+                    <header>
+                      <span>5 <small class="weekday-mobile">Dom</small></span>
+                      
+                    </header>
+                    
+                </section><section class="day">
+                    <header>
+                      <span>6 <small class="weekday-mobile">Lun</small></span>
+                      
+                    </header>
+                    
+                </section><section class="day">
+                    <header>
+                      <span>7 <small class="weekday-mobile">Mar</small></span>
+                      
+                    </header>
+                    
+                </section><section class="day">
+                    <header>
+                      <span>8 <small class="weekday-mobile">Mie</small></span>
+                      
+                    </header>
+                    
+                </section><section class="day">
+                    <header>
+                      <span>9 <small class="weekday-mobile">Jue</small></span>
+                      
+                    </header>
+                    
+                </section><section class="day">
+                    <header>
+                      <span>10 <small class="weekday-mobile">Vie</small></span>
+                      
+                    </header>
+                    
+                </section><section class="day">
+                    <header>
+                      <span>11 <small class="weekday-mobile">Sab</small></span>
+                      
+                    </header>
+                    
+                </section><section class="day">
+                    <header>
+                      <span>12 <small class="weekday-mobile">Dom</small></span>
+                      
+                    </header>
+                    
+                </section><section class="day">
+                    <header>
+                      <span>13 <small class="weekday-mobile">Lun</small></span>
+                      
+                    </header>
+                    
+                </section><section class="day">
+                    <header>
+                      <span>14 <small class="weekday-mobile">Mar</small></span>
+                      
+                    </header>
+                    
+                </section><section class="day">
+                    <header>
+                      <span>15 <small class="weekday-mobile">Mie</small></span>
+                      
+                    </header>
+                    
+                </section><section class="day">
+                    <header>
+                      <span>16 <small class="weekday-mobile">Jue</small></span>
+                      
+                    </header>
+                    
+                </section><section class="day">
+                    <header>
+                      <span>17 <small class="weekday-mobile">Vie</small></span>
+                      
+                    </header>
+                    
+                </section><section class="day">
+                    <header>
+                      <span>18 <small class="weekday-mobile">Sab</small></span>
+                      
+                    </header>
+                    
+                </section><section class="day">
+                    <header>
+                      <span>19 <small class="weekday-mobile">Dom</small></span>
+                      
+                    </header>
+                    
+                </section><section class="day">
+                    <header>
+                      <span>20 <small class="weekday-mobile">Lun</small></span>
+                      
+                    </header>
+                    
+                </section><section class="day">
+                    <header>
+                      <span>21 <small class="weekday-mobile">Mar</small></span>
+                      
+                    </header>
+                    
+                </section><section class="day">
+                    <header>
+                      <span>22 <small class="weekday-mobile">Mie</small></span>
+                      
+                    </header>
+                    
+                </section><section class="day">
+                    <header>
+                      <span>23 <small class="weekday-mobile">Jue</small></span>
+                      
+                    </header>
+                    
+                </section><section class="day">
+                    <header>
+                      <span>24 <small class="weekday-mobile">Vie</small></span>
+                      
+                    </header>
+                    
+                </section><section class="day">
+                    <header>
+                      <span>25 <small class="weekday-mobile">Sab</small></span>
+                      
+                    </header>
+                    
+                </section><section class="day">
+                    <header>
+                      <span>26 <small class="weekday-mobile">Dom</small></span>
+                      
+                    </header>
+                    
+                </section><section class="day">
+                    <header>
+                      <span>27 <small class="weekday-mobile">Lun</small></span>
+                      
+                    </header>
+                    
+                </section><section class="day">
+                    <header>
+                      <span>28 <small class="weekday-mobile">Mar</small></span>
+                      
+                    </header>
+                    
+                </section><section class="day">
+                    <header>
+                      <span>29 <small class="weekday-mobile">Mie</small></span>
+                      
+                    </header>
+                    
+                </section><section class="day">
+                    <header>
+                      <span>30 <small class="weekday-mobile">Jue</small></span>
+                      
+                    </header>
+                    
+                </section><section class="day">
+                    <header>
+                      <span>31 <small class="weekday-mobile">Vie</small></span>
+                      
+                    </header>
+                    
+                </section><section class="day muted">
+                    <header>
+                      <span>1 <small class="weekday-mobile">Sab</small></span>
+                      
+                    </header>
+                    
+                </section><section class="day muted">
+                    <header>
+                      <span>2 <small class="weekday-mobile">Dom</small></span>
+                      
+                    </header>
+                    
+                </section><section class="day muted">
+                    <header>
+                      <span>3 <small class="weekday-mobile">Lun</small></span>
+                      
+                    </header>
+                    
+                </section><section class="day muted">
+                    <header>
+                      <span>4 <small class="weekday-mobile">Mar</small></span>
+                      
+                    </header>
+                    
+                </section><section class="day muted">
+                    <header>
+                      <span>5 <small class="weekday-mobile">Mie</small></span>
+                      
+                    </header>
+                    
+                </section><section class="day muted">
+                    <header>
+                      <span>6 <small class="weekday-mobile">Jue</small></span>
+                      
+                    </header>
+                    
+                </section><section class="day muted">
+                    <header>
+                      <span>7 <small class="weekday-mobile">Vie</small></span>
+                      
+                    </header>
+                    
+                </section><section class="day muted">
+                    <header>
+                      <span>8 <small class="weekday-mobile">Sab</small></span>
+                      
+                    </header>
+                    
+                </section><section class="day muted">
+                    <header>
+                      <span>9 <small class="weekday-mobile">Dom</small></span>
+                      
+                    </header>
+                    
+                </section></div>
+    </section>
+      </section>
+    </div>
+  </main>
+</body>
+</html>
